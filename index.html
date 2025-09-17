@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UH Esports Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0A0B0F; color: #FFFFFF; }
+        .container { min-height: 100vh; display: flex; }
+        .sidebar { width: 280px; background: rgba(255,255,255,0.03); border-right: 1px solid rgba(255,255,255,0.08); height: 100vh; position: fixed; z-index: 100; transition: transform 250ms; }
+        .header { padding: 2rem; background: linear-gradient(135deg, #C41230, #9A0E26); color: white; }
+        .nav { padding: 1.5rem 0; }
+        .nav-title { padding: 0 2rem; margin-bottom: 0.5rem; font-size: 0.75rem; text-transform: uppercase; color: #6B7280; font-weight: 600; }
+        .nav-item { display: block; padding: 0.875rem 2rem; color: #B8BCC8; cursor: pointer; border: none; background: none; width: 100%; text-align: left; position: relative; }
+        .nav-item:hover, .nav-item.active { color: #FFFFFF; background: rgba(255,255,255,0.03); }
+        .nav-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #C41230; }
+        .main { flex: 1; margin-left: 280px; }
+        .topbar { background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .search { width: 100%; max-width: 600px; padding: 0.75rem 1rem; background: #1A1D25; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #FFFFFF; }
+        .export-actions { display: flex; gap: 0.5rem; }
+        .content { padding: 2rem; }
+        .title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .subtitle { color: #B8BCC8; margin-bottom: 2rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 1.5rem; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #C41230; }
+        .stat-label { color: #B8BCC8; font-size: 0.875rem; }
+        .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .card-header { display: flex; justify-content: space-between; margin-bottom: 1.5rem; }
+        .card-title { font-size: 1.25rem; font-weight: 600; }
+        .btn { padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, #C41230, #9A0E26); color: white; }
+        .btn-secondary { background: #1A1D25; color: #B8BCC8; border: 1px solid rgba(255,255,255,0.08); }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; }
+        .btn-success { background: #10B981; color: white; }
+        .btn-warning { background: #F59E0B; color: white; }
+        .btn-danger { background: #EF4444; color: white; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { color: #B8BCC8; margin-bottom: 5px; font-size: 14px; }
+        input, select { padding: 0.75rem 1rem; background: #0A0B0F; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #FFFFFF; }
+        .file-input { display: none; }
+        .item { background: #1A1D25; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .item-info { flex: 1; }
+        .item-title { font-weight: 600; margin-bottom: 0.25rem; }
+        .item-details { font-size: 0.875rem; color: #6B7280; }
+        .item-actions { display: flex; gap: 0.5rem; }
+        .badge { padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .badge-win { background: rgba(16,185,129,0.1); color: #10B981; }
+        .badge-loss { background: rgba(239,68,68,0.1); color: #EF4444; }
+        .badge-draw { background: rgba(245,158,11,0.1); color: #F59E0B; }
+        .badge-paid { background: rgba(16,185,129,0.1); color: #10B981; }
+        .badge-unpaid { background: rgba(239,68,68,0.1); color: #EF4444; }
+        .badge-partial { background: rgba(245,158,11,0.1); color: #F59E0B; }
+        .mobile-toggle { display: none; width: 48px; height: 48px; background: #1A1D25; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; position: fixed; top: 1rem; left: 1rem; z-index: 1001; color: #FFFFFF; cursor: pointer; align-items: center; justify-content: center; }
+        .import-section { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+        .status-message { padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+        .status-success { background: rgba(16,185,129,0.1); color: #10B981; border: 1px solid rgba(16,185,129,0.2); }
+        .status-error { background: rgba(239,68,68,0.1); color: #EF4444; border: 1px solid rgba(239,68,68,0.2); }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); background: rgba(10, 11, 15, 0.95); backdrop-filter: blur(20px); }
+            .sidebar.open { transform: translateX(0); box-shadow: 0 0 30px rgba(0, 0, 0, 0.5); }
+            .main { margin-left: 0; }
+            .mobile-toggle { display: flex; }
+        }
+        .hidden { display: none !important; }
+        .empty { text-align: center; color: #B8BCC8; padding: 40px; }
+    </style>
+</head>
+<body>
+    <script>
+        // Declare all functions first for proper hoisting
+        var data;
+        
+        function toggleMenu() {
+            var sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        }
+
+        function deleteMatch(id) {
+            if (confirm('Delete this match?')) {
+                data.matches = data.matches.filter(function(m) { 
+                    return m.id !== id; 
+                });
+                saveData();
+                updateMatchesList();
+                updateStats();
+            }
+        }
+
+        function deleteScheduled(id) {
+            if (confirm('Delete this scheduled match?')) {
+                data.scheduled = data.scheduled.filter(function(s) { 
+                    return s.id !== id; 
+                });
+                saveData();
+                updateScheduleList();
+                updateStats();
+            }
+        }
+
+        function deletePlayer(id) {
+            if (confirm('Delete this player? This will also delete their payment records.')) {
+                data.players = data.players.filter(function(p) { 
+                    return p.id !== id; 
+                });
+                data.payments = data.payments.filter(function(pay) { 
+                    return pay.playerId !== id; 
+                });
+                saveData();
+                updatePlayersList();
+                updateStats();
+            }
+        }
+
+        function clearData() {
+            if (confirm('This will delete ALL data. Are you sure?')) {
+                data = {
+                    matches: [],
+                    scheduled: [],
+                    players: [],
+                    payments: [],
+                    duesAmount: 20,
+                    paymentPeriod: 'semester'
+                };
+                saveData();
+                showImportStatus('All data cleared', 'success');
+                updateDataOverview();
+            }
+        }
+
+        // Initialize data
+        data = {
+            matches: [],
+            scheduled: [],
+            players: [],
+            payments: [],
+            duesAmount: 20,
+            paymentPeriod: 'semester'
+        };
+
+        function toggleMenu() {
+            var sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        }
+
+        function showPage(page) {
+            var contents = document.querySelectorAll('.content');
+            for (var i = 0; i < contents.length; i++) {
+                contents[i].classList.add('hidden');
+            }
+            
+            var targetPage = document.getElementById(page + '-page');
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+            
+            var navItems = document.querySelectorAll('.nav-item');
+            for (var i = 0; i < navItems.length; i++) {
+                navItems[i].classList.remove('active');
+            }
+            
+            var pages = ['dashboard', 'matches', 'schedule', 'players', 'dues', 'import-export'];
+            var index = pages.indexOf(page);
+            if (index >= 0 && navItems[index]) {
+                navItems[index].classList.add('active');
+            }
+            
+            var today = new Date().toISOString().split('T')[0];
+            
+            if (page === 'dashboard') {
+                updateStats();
+                updateRecentMatches();
+            }
+            if (page === 'matches') {
+                var dateInput = document.getElementById('matchDate');
+                if (dateInput) dateInput.value = today;
+                updateMatchesList();
+            }
+            if (page === 'schedule') {
+                var dateInput = document.getElementById('scheduleDate');
+                if (dateInput) dateInput.value = today;
+                updateScheduleList();
+            }
+            if (page === 'players') {
+                updatePlayersList();
+            }
+            if (page === 'dues') {
+                var dateInput = document.getElementById('paymentDate');
+                if (dateInput) dateInput.value = today;
+                updatePlayerOptions();
+                updatePaymentsList();
+            }
+            if (page === 'import-export') {
+                updateDataOverview();
+            }
+            
+            var sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.remove('open');
+            }
+        }
+
+        function exportJSON() {
+            var exportData = {
+                matches: data.matches,
+                scheduled: data.scheduled,
+                players: data.players,
+                payments: data.payments,
+                settings: {
+                    duesAmount: data.duesAmount,
+                    paymentPeriod: data.paymentPeriod
+                },
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            var jsonStr = JSON.stringify(exportData, null, 2);
+            var blob = new Blob([jsonStr], {type: 'application/json'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'uh-esports-data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportCSV() {
+            var csv = [];
+            csv.push('MATCHES');
+            csv.push('Team,Opponent,Result,Score,Date');
+            for (var i = 0; i < data.matches.length; i++) {
+                var m = data.matches[i];
+                csv.push(m.team + ',' + m.opponent + ',' + m.result + ',' + m.score + ',' + m.date);
+            }
+            
+            csv.push('');
+            csv.push('PLAYERS');
+            csv.push('Name,Gamertag,Team,Email');
+            for (var i = 0; i < data.players.length; i++) {
+                var p = data.players[i];
+                csv.push(p.name + ',' + p.gamertag + ',' + p.team + ',' + p.email);
+            }
+            
+            var csvStr = csv.join('\n');
+            var blob = new Blob([csvStr], {type: 'text/csv'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'uh-esports-data.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportFinancialData() {
+            var csv = [];
+            
+            csv.push('UH ESPORTS - FINANCIAL REPORT');
+            csv.push('Generated: ' + new Date().toLocaleDateString());
+            csv.push('Payment Period: ' + (data.paymentPeriod === 'semester' ? 'Per Semester' : 'Per Year'));
+            csv.push('Dues Amount: $' + data.duesAmount + '.00');
+            csv.push('');
+            
+            var totalCollected = 0;
+            for (var i = 0; i < data.payments.length; i++) {
+                totalCollected += data.payments[i].amount;
+            }
+            var totalDue = data.players.length * data.duesAmount;
+            var totalOutstanding = Math.max(0, totalDue - totalCollected);
+            var paidCount = 0;
+            
+            for (var i = 0; i < data.players.length; i++) {
+                var playerTotal = 0;
+                for (var j = 0; j < data.payments.length; j++) {
+                    if (data.payments[j].playerId === data.players[i].id) {
+                        playerTotal += data.payments[j].amount;
+                    }
+                }
+                if (playerTotal >= data.duesAmount) paidCount++;
+            }
+            
+            csv.push('FINANCIAL SUMMARY');
+            csv.push('Total Players,' + data.players.length);
+            csv.push('Players Paid in Full,' + paidCount);
+            csv.push('Players with Outstanding Balance,' + (data.players.length - paidCount));
+            csv.push('Total Collected,$' + totalCollected.toFixed(2));
+            csv.push('Total Outstanding,$' + totalOutstanding.toFixed(2));
+            csv.push('Total Expected,$' + totalDue.toFixed(2));
+            csv.push('');
+            
+            csv.push('PLAYER PAYMENT STATUS');
+            csv.push('Name,Team,Email,Amount Paid,Amount Outstanding,Status');
+            
+            for (var i = 0; i < data.players.length; i++) {
+                var player = data.players[i];
+                var playerPaid = 0;
+                
+                for (var j = 0; j < data.payments.length; j++) {
+                    if (data.payments[j].playerId === player.id) {
+                        playerPaid += data.payments[j].amount;
+                    }
+                }
+                
+                var playerOutstanding = Math.max(0, data.duesAmount - playerPaid);
+                var status = playerPaid >= data.duesAmount ? 'PAID' : playerPaid > 0 ? 'PARTIAL' : 'UNPAID';
+                
+                csv.push(player.name + ',' + player.team + ',' + player.email + ',$' + playerPaid.toFixed(2) + ',$' + playerOutstanding.toFixed(2) + ',' + status);
+            }
+            
+            csv.push('');
+            csv.push('PAYMENT TRANSACTION LOG');
+            csv.push('Date,Player,Team,Amount,Method');
+            
+            var sortedPayments = data.payments.slice().sort(function(a, b) {
+                return new Date(b.date) - new Date(a.date);
+            });
+            
+            for (var i = 0; i < sortedPayments.length; i++) {
+                var payment = sortedPayments[i];
+                var player = data.players.find(function(p) { return p.id === payment.playerId; });
+                if (player) {
+                    csv.push(payment.date + ',' + player.name + ',' + player.team + ',$' + payment.amount.toFixed(2) + ',' + payment.method);
+                }
+            }
+            
+            var csvStr = csv.join('\n');
+            var blob = new Blob([csvStr], {type: 'text/csv'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'uh-esports-financial-report.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function updateStats() {
+            var statMatches = document.getElementById('statMatches');
+            var statWinRate = document.getElementById('statWinRate');
+            var statPlayers = document.getElementById('statPlayers');
+            var statScheduled = document.getElementById('statScheduled');
+            
+            if (statMatches) statMatches.textContent = data.matches.length;
+            if (statWinRate) {
+                var wins = 0;
+                for (var i = 0; i < data.matches.length; i++) {
+                    if (data.matches[i].result === 'win') wins++;
+                }
+                var rate = data.matches.length > 0 ? Math.round(wins / data.matches.length * 100) : 0;
+                statWinRate.textContent = rate + '%';
+            }
+            if (statPlayers) statPlayers.textContent = data.players.length;
+            if (statScheduled) statScheduled.textContent = data.scheduled.length;
+        }
+
+        function updateRecentMatches() {
+            var container = document.getElementById('recentMatches');
+            if (!container) return;
+            
+            if (data.matches.length === 0) {
+                container.innerHTML = '<div class="empty">No matches recorded yet</div>';
+            } else {
+                var html = '';
+                var recent = data.matches.slice(-5).reverse();
+                for (var i = 0; i < recent.length; i++) {
+                    var m = recent[i];
+                    html += '<div class="item">';
+                    html += '<div class="item-info">';
+                    html += '<div class="item-title">' + m.team + ' vs ' + m.opponent + '</div>';
+                    html += '<div class="item-details">Score: ' + m.score + ' - ' + m.date + '</div>';
+                    html += '</div>';
+                    html += '<span class="badge badge-' + m.result + '">' + m.result + '</span>';
+                    html += '</div>';
+                }
+                container.innerHTML = html;
+            }
+        }
+
+        function updateMatchesList() {
+            var container = document.getElementById('matchesList');
+            if (!container) return;
+            
+            if (data.matches.length === 0) {
+                container.innerHTML = '<div class="empty">No matches recorded yet</div>';
+            } else {
+                var html = '';
+                for (var i = data.matches.length - 1; i >= 0; i--) {
+                    var m = data.matches[i];
+                    html += '<div class="item">';
+                    html += '<div class="item-info">';
+                    html += '<div class="item-title">' + m.team + ' vs ' + m.opponent + '</div>';
+                    html += '<div class="item-details">Score: ' + m.score + ' - ' + m.date + '</div>';
+                    html += '</div>';
+                    html += '<div class="item-actions">';
+                    html += '<span class="badge badge-' + m.result + '">' + m.result + '</span>';
+                    html += '<button class="btn btn-danger btn-sm" onclick="deleteMatch(' + m.id + ')">Delete</button>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+                container.innerHTML = html;
+            }
+        }
+
+        function updateScheduleList() {
+            var container = document.getElementById('scheduleList');
+            if (!container) return;
+            
+            if (data.scheduled.length === 0) {
+                container.innerHTML = '<div class="empty">No matches scheduled</div>';
+            } else {
+                var sorted = data.scheduled.slice().sort(function(a, b) {
+                    return new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time);
+                });
+                var html = '';
+                for (var i = 0; i < sorted.length; i++) {
+                    var s = sorted[i];
+                    html += '<div class="item">';
+                    html += '<div class="item-info">';
+                    html += '<div class="item-title">' + s.team + ' vs ' + s.opponent + '</div>';
+                    html += '<div class="item-details">' + s.date + ' at ' + s.time + '</div>';
+                    html += '</div>';
+                    html += '<div class="item-actions">';
+                    html += '<button class="btn btn-danger btn-sm" onclick="deleteScheduled(' + s.id + ')">Delete</button>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+                container.innerHTML = html;
+            }
+        }
+
+        function updatePlayersList() {
+            var container = document.getElementById('playersList');
+            if (!container) return;
+            
+            if (data.players.length === 0) {
+                container.innerHTML = '<div class="empty">No players added yet</div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < data.players.length; i++) {
+                    var p = data.players[i];
+                    html += '<div class="item">';
+                    html += '<div class="item-info">';
+                    html += '<div class="item-title">' + p.name + ' (' + p.gamertag + ')</div>';
+                    html += '<div class="item-details">' + p.team + ' - ' + p.email + '</div>';
+                    html += '</div>';
+                    html += '<div class="item-actions">';
+                    html += '<button class="btn btn-danger btn-sm" onclick="deletePlayer(' + p.id + ')">Delete</button>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+                container.innerHTML = html;
+            }
+        }
+
+        function updatePlayerOptions() {
+            var select = document.getElementById('paymentPlayer');
+            if (!select) return;
+            
+            var html = '<option value="">Select Player...</option>';
+            for (var i = 0; i < data.players.length; i++) {
+                var p = data.players[i];
+                html += '<option value="' + p.id + '">' + p.name + ' - ' + p.team + '</option>';
+            }
+            select.innerHTML = html;
+        }
+
+        function updatePaymentsList() {
+            var container = document.getElementById('paymentsList');
+            if (!container) return;
+            
+            if (data.players.length === 0) {
+                container.innerHTML = '<div class="empty">No players found. Add players first!</div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < data.players.length; i++) {
+                    var player = data.players[i];
+                    var totalPaid = 0;
+                    
+                    for (var j = 0; j < data.payments.length; j++) {
+                        if (data.payments[j].playerId === player.id) {
+                            totalPaid += data.payments[j].amount;
+                        }
+                    }
+                    
+                    var status = totalPaid >= data.duesAmount ? 'paid' : totalPaid > 0 ? 'partial' : 'unpaid';
+                    var statusText = totalPaid >= data.duesAmount ? 'PAID' : totalPaid > 0 ? 'PARTIAL ($' + totalPaid.toFixed(2) + ')' : 'UNPAID';
+                    
+                    html += '<div class="item">';
+                    html += '<div class="item-info">';
+                    html += '<div class="item-title">' + player.name + '</div>';
+                    html += '<div class="item-details">' + player.team + ' - ' + player.email + '</div>';
+                    html += '</div>';
+                    html += '<span class="badge badge-' + status + '">' + statusText + '</span>';
+                    html += '</div>';
+                }
+                container.innerHTML = html;
+            }
+            
+            updatePaymentStats();
+        }
+
+        function updatePaymentStats() {
+            var totalCollected = 0;
+            for (var i = 0; i < data.payments.length; i++) {
+                totalCollected += data.payments[i].amount;
+            }
+            
+            var totalDue = data.players.length * data.duesAmount;
+            var totalOutstanding = Math.max(0, totalDue - totalCollected);
+            
+            var paidCount = 0;
+            for (var i = 0; i < data.players.length; i++) {
+                var playerTotal = 0;
+                for (var j = 0; j < data.payments.length; j++) {
+                    if (data.payments[j].playerId === data.players[i].id) {
+                        playerTotal += data.payments[j].amount;
+                    }
+                }
+                if (playerTotal >= data.duesAmount) paidCount++;
+            }
+            
+            var el = document.getElementById('totalCollected');
+            if (el) el.textContent = '$' + totalCollected.toFixed(2);
+            el = document.getElementById('totalOutstanding');
+            if (el) el.textContent = '$' + totalOutstanding.toFixed(2);
+            el = document.getElementById('paidCount');
+            if (el) el.textContent = paidCount;
+            el = document.getElementById('unpaidCount');
+            if (el) el.textContent = data.players.length - paidCount;
+        }
+
+        function updatePeriod() {
+            var select = document.getElementById('paymentPeriod');
+            if (!select) return;
+            
+            data.paymentPeriod = select.value;
+            data.duesAmount = select.value === 'semester' ? 20 : 35;
+            
+            var display = document.getElementById('duesDisplay');
+            if (display) display.textContent = '$' + data.duesAmount + '.00';
+            
+            var input = document.getElementById('paymentAmount');
+            if (input) input.value = data.duesAmount;
+            
+            saveData();
+            updatePaymentsList();
+        }
+
+        function updateDataOverview() {
+            var dm = document.getElementById('dataMatches');
+            var dp = document.getElementById('dataPlayers');
+            var ds = document.getElementById('dataScheduled');
+            var dpy = document.getElementById('dataPayments');
+            
+            if (dm) dm.textContent = data.matches.length;
+            if (dp) dp.textContent = data.players.length;
+            if (ds) ds.textContent = data.scheduled.length;
+            if (dpy) dpy.textContent = data.payments.length;
+        }
+
+        function addMatch() {
+            var match = {
+                id: Date.now(),
+                team: document.getElementById('matchTeam').value,
+                opponent: document.getElementById('matchOpponent').value,
+                result: document.getElementById('matchResult').value,
+                score: document.getElementById('matchScore').value,
+                date: document.getElementById('matchDate').value
+            };
+            
+            if (match.opponent && match.score && match.date) {
+                data.matches.push(match);
+                saveData();
+                updateMatchesList();
+                updateStats();
+                alert('Match added successfully!');
+                document.getElementById('matchOpponent').value = '';
+                document.getElementById('matchScore').value = '';
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        function addScheduledMatch() {
+            var scheduled = {
+                id: Date.now(),
+                team: document.getElementById('scheduleTeam').value,
+                opponent: document.getElementById('scheduleOpponent').value,
+                date: document.getElementById('scheduleDate').value,
+                time: document.getElementById('scheduleTime').value
+            };
+            
+            if (scheduled.opponent && scheduled.date && scheduled.time) {
+                data.scheduled.push(scheduled);
+                saveData();
+                updateScheduleList();
+                updateStats();
+                alert('Match scheduled successfully!');
+                document.getElementById('scheduleOpponent').value = '';
+                document.getElementById('scheduleTime').value = '';
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        function addPlayer() {
+            var player = {
+                id: Date.now(),
+                name: document.getElementById('playerName').value,
+                gamertag: document.getElementById('playerGamertag').value,
+                team: document.getElementById('playerTeam').value,
+                email: document.getElementById('playerEmail').value
+            };
+            
+            if (player.name && player.gamertag && player.email) {
+                data.players.push(player);
+                saveData();
+                updatePlayersList();
+                updateStats();
+                alert('Player added successfully!');
+                document.getElementById('playerName').value = '';
+                document.getElementById('playerGamertag').value = '';
+                document.getElementById('playerEmail').value = '';
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        function recordPayment() {
+            var payment = {
+                id: Date.now(),
+                playerId: parseInt(document.getElementById('paymentPlayer').value),
+                amount: parseFloat(document.getElementById('paymentAmount').value),
+                method: document.getElementById('paymentMethod').value,
+                date: document.getElementById('paymentDate').value
+            };
+            
+            if (payment.playerId && payment.amount && payment.date) {
+                data.payments.push(payment);
+                saveData();
+                updatePaymentsList();
+                alert('Payment recorded successfully!');
+                document.getElementById('paymentPlayer').value = '';
+                document.getElementById('paymentAmount').value = data.duesAmount;
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        function importJSON(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    var imported = JSON.parse(e.target.result);
+                    if (imported.matches) data.matches = imported.matches;
+                    if (imported.scheduled) data.scheduled = imported.scheduled;
+                    if (imported.players) data.players = imported.players;
+                    if (imported.payments) data.payments = imported.payments;
+                    if (imported.settings) {
+                        data.duesAmount = imported.settings.duesAmount || 20;
+                        data.paymentPeriod = imported.settings.paymentPeriod || 'semester';
+                    }
+                    saveData();
+                    showImportStatus('Data imported successfully!', 'success');
+                    updateDataOverview();
+                } catch (error) {
+                    showImportStatus('Error importing file', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function showImportStatus(message, type) {
+            var status = document.getElementById('importStatus');
+            if (status) {
+                status.innerHTML = '<div class="status-message status-' + type + '">' + message + '</div>';
+                setTimeout(function() {
+                    status.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('uhEsportsData', JSON.stringify(data));
+            } catch(e) {
+                console.log('localStorage not available');
+            }
+        }
+
+        function loadData() {
+            try {
+                var stored = localStorage.getItem('uhEsportsData');
+                if (stored) {
+                    data = JSON.parse(stored);
+                }
+            } catch(e) {
+                console.log('localStorage not available');
+            }
+        }
+
+        // Make functions globally accessible for onclick handlers
+        window.toggleMenu = toggleMenu;
+        window.showPage = showPage;
+        window.exportJSON = exportJSON;
+        window.exportCSV = exportCSV;
+        window.exportFinancialData = exportFinancialData;
+        window.addMatch = addMatch;
+        window.deleteMatch = deleteMatch;
+        window.addScheduledMatch = addScheduledMatch;
+        window.deleteScheduled = deleteScheduled;
+        window.addPlayer = addPlayer;
+        window.deletePlayer = deletePlayer;
+        window.recordPayment = recordPayment;
+        window.updatePeriod = updatePeriod;
+        window.importJSON = importJSON;
+        window.clearData = clearData;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            updateStats();
+            updateRecentMatches();
+        });
+    </script>
+
+    <div class="container">
+        <button class="mobile-toggle" onclick="toggleMenu()">☰</button>
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="header">
+                <div>
+                    <div style="font-size: 1.25rem; font-weight: 700;">UH Esports</div>
+                    <div style="font-size: 0.75rem; opacity: 0.9;">Competition Hub</div>
+                </div>
+            </div>
+            <nav class="nav">
+                <div class="nav-title">Main</div>
+                <button class="nav-item active" onclick="showPage('dashboard')">Dashboard</button>
+                <button class="nav-item" onclick="showPage('matches')">Matches</button>
+                <button class="nav-item" onclick="showPage('schedule')">Schedule</button>
+                <button class="nav-item" onclick="showPage('players')">Players</button>
+                <button class="nav-item" onclick="showPage('dues')">Dues & Payments</button>
+                <div class="nav-title" style="margin-top: 1rem;">Data</div>
+                <button class="nav-item" onclick="showPage('import-export')">Import/Export</button>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <input type="text" class="search" placeholder="Search matches, players, teams...">
+                <div class="export-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="exportJSON()">Export JSON</button>
+                    <button class="btn btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button>
+                    <button class="btn btn-warning btn-sm" onclick="exportFinancialData()">Export Financial</button>
+                </div>
+            </header>
+
+            <div class="content" id="dashboard-page">
+                <h1 class="title">Dashboard</h1>
+                <p class="subtitle">Welcome back! Here's your esports overview</p>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="statMatches">0</div>
+                        <div class="stat-label">Total Matches</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statWinRate">0%</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statPlayers">0</div>
+                        <div class="stat-label">Players</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statScheduled">0</div>
+                        <div class="stat-label">Upcoming</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Matches</h2>
+                    </div>
+                    <div id="recentMatches">
+                        <div class="empty">No matches recorded yet. Add your first match!</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Quick Actions</h2>
+                    </div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="showPage('matches')">+ Add Match</button>
+                        <button class="btn btn-primary" onclick="showPage('players')">+ Add Player</button>
+                        <button class="btn btn-secondary" onclick="showPage('schedule')">View Schedule</button>
+                        <button class="btn btn-warning" onclick="showPage('import-export')">Import/Export Data</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content hidden" id="matches-page">
+                <h1 class="title">Matches</h1>
+                <p class="subtitle">Manage and track all match results</p>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Add New Match</h2>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Team</label>
+                            <select id="matchTeam">
+                                <option>Valorant Premiere</option>
+                                <option>League of Legends Collegiate</option>
+                                <option>Overwatch Horizon</option>
+                                <option>Overwatch Midtown</option>
+                                <option>Overwatch Circuit</option>
+                                <option>SSBU Red</option>
+                                <option>SSBU White</option>
+                                <option>SSBU Black</option>
+                                <option>CS2 Red</option>
+                                <option>Apex Legends Red</option>
+                                <option>Apex Legends White</option>
+                                <option>RL Red</option>
+                                <option>RL White</option>
+                                <option>Fortnite Red</option>
+                                <option>Fortnite White</option>
+                                <option>Fortnite Black</option>
+                                <option>Fortnite Teal</option>
+                                <option>Call of Duty Red</option>
+                                <option>Pokemon Red</option>
+                                <option>Marvel Rivals Eternals</option>
+                                <option>Marvel Rivals Solaris</option>
+                                <option>Marvel Rivals Nova</option>
+                                <option>R6 Red</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Opponent</label>
+                            <input type="text" id="matchOpponent" placeholder="Opponent team name">
+                        </div>
+                        <div class="form-group">
+                            <label>Result</label>
+                            <select id="matchResult">
+                                <option value="win">Win</option>
+                                <option value="loss">Loss</option>
+                                <option value="draw">Draw</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Score</label>
+                            <input type="text" id="matchScore" placeholder="2-1">
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="matchDate">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addMatch()">Add Match</button>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Match History</h2>
+                    </div>
+                    <div id="matchesList">
+                        <div class="empty">No matches recorded yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content hidden" id="schedule-page">
+                <h1 class="title">Schedule</h1>
+                <p class="subtitle">View and manage upcoming matches</p>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Schedule New Match</h2>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Team</label>
+                            <select id="scheduleTeam">
+                                <option>Valorant Premiere</option>
+                                <option>League of Legends Collegiate</option>
+                                <option>Overwatch Horizon</option>
+                                <option>Overwatch Midtown</option>
+                                <option>Overwatch Circuit</option>
+                                <option>SSBU Red</option>
+                                <option>SSBU White</option>
+                                <option>SSBU Black</option>
+                                <option>CS2 Red</option>
+                                <option>Apex Legends Red</option>
+                                <option>Apex Legends White</option>
+                                <option>RL Red</option>
+                                <option>RL White</option>
+                                <option>Fortnite Red</option>
+                                <option>Fortnite White</option>
+                                <option>Fortnite Black</option>
+                                <option>Fortnite Teal</option>
+                                <option>Call of Duty Red</option>
+                                <option>Pokemon Red</option>
+                                <option>Marvel Rivals Eternals</option>
+                                <option>Marvel Rivals Solaris</option>
+                                <option>Marvel Rivals Nova</option>
+                                <option>R6 Red</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Opponent</label>
+                            <input type="text" id="scheduleOpponent" placeholder="Opponent team name">
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="scheduleDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Time</label>
+                            <input type="time" id="scheduleTime">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addScheduledMatch()">Schedule Match</button>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Upcoming Matches</h2>
+                    </div>
+                    <div id="scheduleList">
+                        <div class="empty">No matches scheduled</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content hidden" id="players-page">
+                <h1 class="title">Players</h1>
+                <p class="subtitle">Manage player profiles and team rosters</p>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Add New Player</h2>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="playerName" placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Gamertag</label>
+                            <input type="text" id="playerGamertag" placeholder="ProPlayer123">
+                        </div>
+                        <div class="form-group">
+                            <label>Team</label>
+                            <select id="playerTeam">
+                                <option>Valorant Premiere</option>
+                                <option>League of Legends Collegiate</option>
+                                <option>Overwatch Horizon</option>
+                                <option>Overwatch Midtown</option>
+                                <option>Overwatch Circuit</option>
+                                <option>SSBU Red</option>
+                                <option>SSBU White</option>
+                                <option>SSBU Black</option>
+                                <option>CS2 Red</option>
+                                <option>Apex Legends Red</option>
+                                <option>Apex Legends White</option>
+                                <option>RL Red</option>
+                                <option>RL White</option>
+                                <option>Fortnite Red</option>
+                                <option>Fortnite White</option>
+                                <option>Fortnite Black</option>
+                                <option>Fortnite Teal</option>
+                                <option>Call of Duty Red</option>
+                                <option>Pokemon Red</option>
+                                <option>Marvel Rivals Eternals</option>
+                                <option>Marvel Rivals Solaris</option>
+                                <option>Marvel Rivals Nova</option>
+                                <option>R6 Red</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="playerEmail" placeholder="player@uh.edu">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addPlayer()">Add Player</button>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Player Roster</h2>
+                    </div>
+                    <div id="playersList">
+                        <div class="empty">No players added yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content hidden" id="dues-page">
+                <h1 class="title">Dues & Payments</h1>
+                <p class="subtitle">Track player dues and payment status</p>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="totalCollected">$0.00</div>
+                        <div class="stat-label">Collected</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="totalOutstanding">$0.00</div>
+                        <div class="stat-label">Outstanding</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="paidCount">0</div>
+                        <div class="stat-label">Paid</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="unpaidCount">0</div>
+                        <div class="stat-label">Unpaid</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Payment Settings</h2>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Payment Period</label>
+                            <select id="paymentPeriod" onchange="updatePeriod()">
+                                <option value="semester">Per Semester ($20)</option>
+                                <option value="year">Per Year ($35)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Current Amount</label>
+                            <div style="padding: 0.75rem 1rem; background: #1A1D25; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;" id="duesDisplay">$20.00</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Record Payment</h2>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Player</label>
+                            <select id="paymentPlayer">
+                                <option value="">Select Player...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount</label>
+                            <input type="number" id="paymentAmount" step="0.01" value="20">
+                        </div>
+                        <div class="form-group">
+                            <label>Method</label>
+                            <select id="paymentMethod">
+                                <option>Cash</option>
+                                <option>Venmo</option>
+                                <option>Zelle</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="paymentDate">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="recordPayment()">Record Payment</button>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Payment Status</h2>
+                    </div>
+                    <div id="paymentsList">
+                        <div class="empty">No players found. Add players first!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content hidden" id="import-export-page">
+                <h1 class="title">Import/Export Data</h1>
+                <p class="subtitle">Backup, restore, and share your esports data</p>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Export Data</h2>
+                    </div>
+                    <p style="color: #B8BCC8; margin-bottom: 1.5rem;">Download your data as JSON (complete backup), CSV (spreadsheet format), or Financial Report (dues & payments only)</p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="exportJSON()">Export as JSON</button>
+                        <button class="btn btn-primary" onclick="exportCSV()">Export as CSV</button>
+                        <button class="btn btn-warning" onclick="exportFinancialData()">Export Financial Report</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Import Data</h2>
+                    </div>
+                    <div class="import-section">
+                        <p style="margin-bottom: 1rem;">Import from JSON file (complete restore)</p>
+                        <input type="file" id="jsonFileInput" class="file-input" accept=".json" onchange="importJSON(event)">
+                        <button class="btn btn-success" onclick="document.getElementById('jsonFileInput').click()">Choose JSON File</button>
+                        <button class="btn btn-secondary" onclick="clearData()">Clear All Data</button>
+                    </div>
+                    <div id="importStatus"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Data Overview</h2>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value" id="dataMatches">0</div>
+                            <div class="stat-label">Matches</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="dataPlayers">0</div>
+                            <div class="stat-label">Players</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="dataScheduled">0</div>
+                            <div class="stat-label">Scheduled</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="dataPayments">0</div>
+                            <div class="stat-label">Payments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
